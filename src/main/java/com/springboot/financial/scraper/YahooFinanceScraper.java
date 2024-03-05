@@ -75,10 +75,9 @@ public class YahooFinanceScraper implements Scraper {
         try {
             Document document = Jsoup.connect(url).get();
 
-            Elements parsingDivs = document.getElementsByAttributeValue("data-test", "qsp-profile");
-            Element titleEle = parsingDivs.getFirst().children().getFirst();
+            Element titleEle = document.getElementsByTag("h1").getFirst();
 
-            String title = titleEle.text();
+            String title = titleEle.text().split("\\(")[0];
             return Company.builder()
                     .ticker(ticker)
                     .name(title)

@@ -1,9 +1,12 @@
 package com.springboot.financial.web;
 
 import com.springboot.financial.model.Company;
+import com.springboot.financial.persist.entity.CompanyEntity;
 import com.springboot.financial.service.CompanyService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,8 +25,9 @@ public class CompanyController {
     }
 
     @GetMapping()
-    public ResponseEntity<?> searchCompany() {
-        return null;
+    public ResponseEntity<?> searchCompany(final Pageable pageable) {
+        Page<CompanyEntity> companyList = this.companyService.getAllCompany(pageable);
+        return ResponseEntity.ok(companyList);
     }
 
     /**
