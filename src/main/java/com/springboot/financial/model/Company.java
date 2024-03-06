@@ -1,11 +1,13 @@
 package com.springboot.financial.model;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 @Data
-@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Company {
 
     private String ticker;
