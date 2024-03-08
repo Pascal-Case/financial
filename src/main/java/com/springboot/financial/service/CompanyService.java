@@ -1,5 +1,6 @@
 package com.springboot.financial.service;
 
+import com.springboot.financial.exception.impl.NoCompanyException;
 import com.springboot.financial.model.Company;
 import com.springboot.financial.model.ScrapedResult;
 import com.springboot.financial.persist.CompanyRepository;
@@ -75,5 +76,16 @@ public class CompanyService {
 
     public void deleteAutoCompleteKeyword(String keyword) {
         this.trie.remove(keyword);
+    }
+
+    public String deleteCompany(String ticker) {
+        var company = this.companyRepository.findByTicker(ticker)
+                .orElseThrow(NoCompanyException::new);
+
+        this.dividendRepository.deleteAllByCompanyId(company.getId());
+        this.companyRepository.delete(company);
+
+        this.deleteAutoCompleteKeyword(company.getName());
+        return company.getName();
     }
 }

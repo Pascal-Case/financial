@@ -1,23 +1,32 @@
 package com.springboot.financial.web;
 
+import com.springboot.financial.annotation.ReadRoleAuthorize;
+import com.springboot.financial.annotation.WriteRoleAuthorize;
 import com.springboot.financial.model.Company;
+import com.springboot.financial.model.constants.CacheKey;
 import com.springboot.financial.persist.entity.CompanyEntity;
 import com.springboot.financial.service.CompanyService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
+
 @RestController
 @RequestMapping("/company")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CompanyController {
 
     private final CompanyService companyService;
 
+    private final CacheManager redisCacheManager;
+
     @GetMapping("/autocomplete")
+    @ReadRoleAuthorize
     public ResponseEntity<?> autocomplete(
             @RequestParam String keyword
     ) {
@@ -25,18 +34,14 @@ public class CompanyController {
     }
 
     @GetMapping()
+    @ReadRoleAuthorize
     public ResponseEntity<?> searchCompany(final Pageable pageable) {
         Page<CompanyEntity> companyList = this.companyService.getAllCompany(pageable);
         return ResponseEntity.ok(companyList);
     }
 
-    /**
-     * 회사 및 배당금 정보 조회
-     *
-     * @param request
-     * @return
-     */
     @PostMapping()
+    @WriteRoleAuthorize
     public ResponseEntity<?> addCompany(
             @RequestBody Company request
     ) {
@@ -52,8 +57,16 @@ public class CompanyController {
         return ResponseEntity.ok(company);
     }
 
-    @DeleteMapping()
-    public ResponseEntity<?> deleteCompany() {
-        return null;
+    @DeleteMapping("/{ticker}")
+    @WriteRoleAuthorize
+    public ResponseEntity<?> deleteCompany(@PathVariable String ticker) {
+        String companyName = this.companyService.deleteCompany(ticker);
+        this.clearFinanceCache(companyName);
+
+        return ResponseEntity.ok(companyName);
+    }
+
+    public void clearFinanceCache(String companyName) {
+        Objects.requireNonNull(this.redisCacheManager.getCache(CacheKey.KEY_FINANCE)).evict(companyName);
     }
 }
