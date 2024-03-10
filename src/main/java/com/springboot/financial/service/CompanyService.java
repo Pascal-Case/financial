@@ -1,6 +1,8 @@
 package com.springboot.financial.service;
 
+import com.springboot.financial.exception.impl.AlreadyExistTickerException;
 import com.springboot.financial.exception.impl.NoCompanyException;
+import com.springboot.financial.exception.impl.ScrapFailedException;
 import com.springboot.financial.model.Company;
 import com.springboot.financial.model.ScrapedResult;
 import com.springboot.financial.persist.CompanyRepository;
@@ -9,15 +11,16 @@ import com.springboot.financial.persist.entity.CompanyEntity;
 import com.springboot.financial.persist.entity.DividendEntity;
 import com.springboot.financial.scraper.Scraper;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.Trie;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class CompanyService {
@@ -28,9 +31,10 @@ public class CompanyService {
     private final DividendRepository dividendRepository;
 
     public Company save(String ticker) {
+        log.info("Checking if ticker {} already exists.", ticker);
         boolean exist = companyRepository.existsByTicker(ticker);
         if (exist) {
-            throw new RuntimeException("already exist ticker -> " + ticker);
+            throw new AlreadyExistTickerException();
         }
         return this.storeCompanyAndDividend(ticker);
     }
@@ -40,30 +44,27 @@ public class CompanyService {
     }
 
     private Company storeCompanyAndDividend(String ticker) {
+        log.info("Starting to scrape company information for ticker: {}", ticker);
         // ticker 기준으로 회사를 스크래핑
         Company company = yahooFinanceScraper.scrapCompanyByTicker(ticker);
         if (ObjectUtils.isEmpty(company)) {
-            throw new RuntimeException("failed to scrap ticker -> " + ticker);
+            throw new ScrapFailedException();
         }
 
         // 해당 회사가 존재할 경우, 회사의 배당금 정보를 스크래핑
+        log.info("Scraping dividends for company: {}", company.getName());
         ScrapedResult scrapedResult = this.yahooFinanceScraper.scrap(company);
 
         // 스크래핑 결과
+        log.info("Saving company and dividends information to the database for company: {}", company.getName());
         CompanyEntity companyEntity = this.companyRepository.save(new CompanyEntity(company));
         List<DividendEntity> dividendEntityList = scrapedResult.getDividends().stream()
                 .map(dividend -> new DividendEntity(companyEntity.getId(), dividend))
                 .toList();
         this.dividendRepository.saveAll(dividendEntityList);
 
+        log.info("Company and dividends saved successfully for company: {}", company.getName());
         return company;
-    }
-
-    public List<String> getCompanyNamesByKeyword(String keyword) {
-        Pageable limit = PageRequest.of(0, 10);
-        Page<CompanyEntity> companyEntities =
-                this.companyRepository.findByNameStartingWithIgnoreCase(keyword, limit);
-        return companyEntities.stream().map(CompanyEntity::getName).toList();
     }
 
     public void addAutoCompleteKeyword(String keyword) {
@@ -82,9 +83,11 @@ public class CompanyService {
         var company = this.companyRepository.findByTicker(ticker)
                 .orElseThrow(NoCompanyException::new);
 
+        log.info("Deleting all dividends associated with company ID: {}", company.getId());
         this.dividendRepository.deleteAllByCompanyId(company.getId());
         this.companyRepository.delete(company);
 
+        log.info("Deleting autocomplete keyword for company: {}", company.getName());
         this.deleteAutoCompleteKeyword(company.getName());
         return company.getName();
     }

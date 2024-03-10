@@ -36,7 +36,7 @@ public class SecurityConfiguration {
 
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/", "/auth/signup", "/auth/signin").permitAll()
-                        .requestMatchers("/h2-console/**", "/swagger-ui/**").permitAll() // 개발 관련
+                        .requestMatchers("/h2-console/**").permitAll() // 개발 관련
                 )
                 .authorizeHttpRequests(request -> request.anyRequest().authenticated())
 

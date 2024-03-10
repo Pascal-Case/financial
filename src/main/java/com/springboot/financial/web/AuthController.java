@@ -27,7 +27,9 @@ public class AuthController {
     public ResponseEntity<?> signup(
             @RequestBody SignUp request
     ) {
+        log.info("Attempt to signup with username: {}", request.getUsername());
         var result = this.memberService.register(request);
+        log.info("Signup successful for username: {}", request.getUsername());
         return ResponseEntity.ok(result);
     }
 
@@ -35,9 +37,10 @@ public class AuthController {
     public ResponseEntity<?> signin(
             @RequestBody SignIn request
     ) {
+        log.info("Attempt to signin with username: {}", request.getUsername());
         var member = this.memberService.authenticate(request);
         var token = this.tokenProvider.generateToken(member.getUsername(), member.getRoles());
-        log.info("user login -> " + request.getUsername());
+        log.info("Signin successful, token generated for username: {}", request.getUsername());
         return ResponseEntity.ok(token);
     }
 
