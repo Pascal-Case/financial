@@ -16,6 +16,7 @@ import org.apache.commons.collections4.Trie;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class CompanyService {
     private final CompanyRepository companyRepository;
     private final DividendRepository dividendRepository;
 
+    @Transactional
     public Company save(String ticker) {
         log.info("Checking if ticker {} already exists.", ticker);
         boolean exist = companyRepository.existsByTicker(ticker);
@@ -43,7 +45,8 @@ public class CompanyService {
         return companyRepository.findAll(pageable);
     }
 
-    private Company storeCompanyAndDividend(String ticker) {
+    @Transactional
+    protected Company storeCompanyAndDividend(String ticker) {
         log.info("Starting to scrape company information for ticker: {}", ticker);
         // ticker 기준으로 회사를 스크래핑
         Company company = yahooFinanceScraper.scrapCompanyByTicker(ticker);
@@ -79,6 +82,7 @@ public class CompanyService {
         this.trie.remove(keyword);
     }
 
+    @Transactional
     public String deleteCompany(String ticker) {
         var company = this.companyRepository.findByTicker(ticker)
                 .orElseThrow(NoCompanyException::new);

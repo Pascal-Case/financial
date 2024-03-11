@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ public class FinanceService {
     private final DividendRepository dividendRepository;
 
     @Cacheable(key = "#companyName", value = CacheKey.KEY_FINANCE)
+    @Transactional(readOnly = true)
     public ScrapedResult getDividendByCompanyName(String companyName) {
         log.info("Request received for company: {}", companyName);
         // 1. 회사명을 기준으로 회사 정보를 조회

@@ -23,7 +23,7 @@ public class MemberService implements UserDetailsService {
     private final MemberRepository memberRepository;
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) {
         log.info("Loading user by username: {}", username);
         UserDetails userDetails = this.memberRepository.findByUsername(username)
@@ -32,6 +32,7 @@ public class MemberService implements UserDetailsService {
         return userDetails;
     }
 
+    @Transactional
     public SignUp.Response register(SignUp.Request request) {
         log.info("Attempting to register new user with username: {}", request.getUsername());
         boolean exists = this.memberRepository.existsByUsername(request.getUsername());
