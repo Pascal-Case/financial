@@ -1,5 +1,7 @@
 package com.springboot.financial.security;
 
+import com.springboot.financial.exception.impl.JwtValidationException;
+import com.springboot.financial.exception.impl.TokenExpiredException;
 import com.springboot.financial.service.MemberService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -68,13 +70,14 @@ public class TokenProvider {
     }
 
     public Boolean validateToken(String token) {
-        Claims claims = parseClaims(token);
-        boolean isExpired = claims.getExpiration().before(new Date());
-        if (isExpired) {
-            log.info("Token expired for subject: {}", claims.getSubject());
-            return false;
+        try {
+            parseClaims(token);
+            return true;
+        } catch (ExpiredJwtException e) {
+            throw new TokenExpiredException();
+        } catch (JwtValidationException e) {
+            throw new JwtValidationException();
         }
-        return true;
     }
 
     private Claims parseClaims(String token) {
@@ -84,8 +87,12 @@ public class TokenProvider {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException e) {
-            log.info("Parsing claims from expired token for subject: {}", e.getClaims().getSubject());
-            return e.getClaims();
+            log.warn("Token expired for subject: {}, Expiration Time : {}",
+                    e.getClaims().getSubject(), e.getClaims().getExpiration());
+            throw new TokenExpiredException();
+        } catch (Exception e) {
+            log.error("Error parsing claims from token: {}", e.getMessage());
+            throw new JwtValidationException();
         }
     }
 }

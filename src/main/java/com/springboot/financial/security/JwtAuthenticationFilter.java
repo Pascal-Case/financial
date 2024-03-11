@@ -1,5 +1,7 @@
 package com.springboot.financial.security;
 
+import com.springboot.financial.exception.impl.JwtValidationException;
+import com.springboot.financial.exception.impl.TokenExpiredException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,14 +32,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             HttpServletRequest request, HttpServletResponse response, FilterChain filterChain
     ) throws ServletException, IOException {
-        // 헤더에서 토큰 가져옴
-        String token = this.resolveTokenFromRequest(request);
+        try {
+            // 헤더에서 토큰 가져옴
+            String token = this.resolveTokenFromRequest(request);
 
-        // 토큰 검증
-        if (StringUtils.hasText(token) && this.tokenProvider.validateToken(token)) {
-            Authentication authToken = this.tokenProvider.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(authToken); // 인증정보 담음
-            log.info("[Authenticated] User: {} - URI: {}", this.tokenProvider.getUsername(token), request.getRequestURI());
+            // 토큰 검증
+            if (StringUtils.hasText(token) && this.tokenProvider.validateToken(token)) {
+                Authentication authToken = this.tokenProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authToken); // 인증정보 담음
+            }
+        } catch (TokenExpiredException e) {
+            log.error("TokenExpiredException occurred: {}", e.getMessage());
+            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+            return;
+        } catch (JwtValidationException e) {
+            log.error("JwtValidationException occurred: {}", e.getMessage());
+            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            return;
         }
 
         // 필터 체인
@@ -50,5 +61,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return token.substring(TOKEN_PREFIX.length());
         }
         return null;
+    }
+
+    private void sendErrorResponse(HttpServletResponse response, int httpStatus, String message) throws IOException {
+        response.setStatus(httpStatus);
+        response.setContentType("application/json;charset=UTF-8");
+        String jsonResponse = String.format("{\"code\": %d, \"message\": \"%s\"}", httpStatus, message);
+        response.getWriter().write(jsonResponse);
     }
 }

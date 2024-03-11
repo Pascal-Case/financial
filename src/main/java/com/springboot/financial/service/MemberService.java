@@ -1,11 +1,12 @@
 package com.springboot.financial.service;
 
+import com.springboot.financial.dto.Auth.SignIn;
+import com.springboot.financial.dto.Auth.SignUp;
+import com.springboot.financial.entity.MemberEntity;
 import com.springboot.financial.exception.impl.AlreadyExistUserException;
 import com.springboot.financial.exception.impl.PasswordDoesNotMatchException;
 import com.springboot.financial.exception.impl.UsernameNotFoundException;
-import com.springboot.financial.model.Auth;
-import com.springboot.financial.model.MemberEntity;
-import com.springboot.financial.persist.MemberRepository;
+import com.springboot.financial.repository.MemberRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,29 +32,33 @@ public class MemberService implements UserDetailsService {
         return userDetails;
     }
 
-    public MemberEntity register(Auth.SignUp member) {
-        log.info("Attempting to register new user with username: {}", member.getUsername());
-        boolean exists = this.memberRepository.existsByUsername(member.getUsername());
+    public SignUp.Response register(SignUp.Request request) {
+        log.info("Attempting to register new user with username: {}", request.getUsername());
+        boolean exists = this.memberRepository.existsByUsername(request.getUsername());
         if (exists) {
             throw new AlreadyExistUserException();
         }
 
-        String encodedPassword = this.passwordEncoder.encode(member.getPassword());
-        member.setPassword(encodedPassword);
-        MemberEntity savedMember = this.memberRepository.save(member.toEntity());
-        log.info("User registered successfully with username: {}", member.getUsername());
-        return savedMember;
+        MemberEntity savedUser = this.memberRepository.save(
+                MemberEntity.builder()
+                        .username(request.getUsername())
+                        .password(this.passwordEncoder.encode(request.getPassword()))
+                        .roles(request.getRoles())
+                        .build()
+        );
+        log.info("User registered successfully with username: {}", request.getUsername());
+        return SignUp.Response.fromEntity(savedUser);
     }
 
-    public MemberEntity authenticate(Auth.SignIn member) {
-        log.info("Attempting to authenticate user with username: {}", member.getUsername());
-        MemberEntity user = this.memberRepository.findByUsername(member.getUsername())
+    public SignIn.Response authenticate(SignIn.Request request) {
+        log.info("Attempting to authenticate user with username: {}", request.getUsername());
+        MemberEntity user = this.memberRepository.findByUsername(request.getUsername())
                 .orElseThrow(UsernameNotFoundException::new);
-        if (!this.passwordEncoder.matches(member.getPassword(), user.getPassword())) {
+        if (!this.passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new PasswordDoesNotMatchException();
         }
 
-        log.info("User authenticated successfully for username: {}", member.getUsername());
-        return user;
+        log.info("User authenticated successfully for username: {}", user.getUsername());
+        return SignIn.Response.fromEntity(user);
     }
 }

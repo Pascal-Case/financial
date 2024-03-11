@@ -2,10 +2,10 @@ package com.springboot.financial.web;
 
 import com.springboot.financial.annotation.ReadRoleAuthorize;
 import com.springboot.financial.annotation.WriteRoleAuthorize;
+import com.springboot.financial.constants.CacheKey;
+import com.springboot.financial.dto.Company;
+import com.springboot.financial.entity.CompanyEntity;
 import com.springboot.financial.exception.impl.TickerNotEnteredException;
-import com.springboot.financial.model.Company;
-import com.springboot.financial.model.constants.CacheKey;
-import com.springboot.financial.persist.entity.CompanyEntity;
 import com.springboot.financial.service.CompanyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

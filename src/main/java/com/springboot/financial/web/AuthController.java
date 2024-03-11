@@ -1,5 +1,7 @@
 package com.springboot.financial.web;
 
+import com.springboot.financial.dto.Auth.SignIn;
+import com.springboot.financial.dto.Auth.SignUp;
 import com.springboot.financial.security.TokenProvider;
 import com.springboot.financial.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.springboot.financial.model.Auth.SignIn;
-import static com.springboot.financial.model.Auth.SignUp;
-
 @Slf4j
 @RestController
 @RequestMapping("/auth")
@@ -20,12 +19,12 @@ import static com.springboot.financial.model.Auth.SignUp;
 public class AuthController {
 
     private final MemberService memberService;
-
     private final TokenProvider tokenProvider;
 
+
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(
-            @RequestBody SignUp request
+    public ResponseEntity<SignUp.Response> signup(
+            @RequestBody SignUp.Request request
     ) {
         log.info("Attempt to signup with username: {}", request.getUsername());
         var result = this.memberService.register(request);
@@ -34,14 +33,15 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> signin(
-            @RequestBody SignIn request
+    public ResponseEntity<SignIn.Response> signin(
+            @RequestBody SignIn.Request request
     ) {
         log.info("Attempt to signin with username: {}", request.getUsername());
-        var member = this.memberService.authenticate(request);
-        var token = this.tokenProvider.generateToken(member.getUsername(), member.getRoles());
+        var result = this.memberService.authenticate(request);
+        String token = this.tokenProvider.generateToken(result.getUsername(), result.getRoles());
+        result.setToken(token);
         log.info("Signin successful, token generated for username: {}", request.getUsername());
-        return ResponseEntity.ok(token);
+        return ResponseEntity.ok(result);
     }
 
 }

@@ -1,7 +1,7 @@
-package com.springboot.financial.persist.entity;
+package com.springboot.financial.entity;
 
 
-import com.springboot.financial.model.Dividend;
+import com.springboot.financial.dto.Dividend;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +23,7 @@ public class DividendEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     private Long companyId;
 
     private LocalDateTime date;

@@ -1,6 +1,6 @@
-package com.springboot.financial.persist;
+package com.springboot.financial.repository;
 
-import com.springboot.financial.persist.entity.CompanyEntity;
+import com.springboot.financial.entity.CompanyEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

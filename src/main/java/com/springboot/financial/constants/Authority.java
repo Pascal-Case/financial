@@ -1,4 +1,4 @@
-package com.springboot.financial.model.constants;
+package com.springboot.financial.constants;
 
 public enum Authority {
     ROLE_READ,

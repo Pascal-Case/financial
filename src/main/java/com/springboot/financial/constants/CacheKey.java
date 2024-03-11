@@ -1,4 +1,4 @@
-package com.springboot.financial.model.constants;
+package com.springboot.financial.constants;
 
 public class CacheKey {
     public static final String KEY_FINANCE = "finance";

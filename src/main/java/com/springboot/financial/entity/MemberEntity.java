@@ -1,4 +1,4 @@
-package com.springboot.financial.model;
+package com.springboot.financial.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

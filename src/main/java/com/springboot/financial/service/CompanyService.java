@@ -1,14 +1,14 @@
 package com.springboot.financial.service;
 
+import com.springboot.financial.dto.Company;
+import com.springboot.financial.dto.ScrapedResult;
+import com.springboot.financial.entity.CompanyEntity;
+import com.springboot.financial.entity.DividendEntity;
 import com.springboot.financial.exception.impl.AlreadyExistTickerException;
 import com.springboot.financial.exception.impl.NoCompanyException;
 import com.springboot.financial.exception.impl.ScrapFailedException;
-import com.springboot.financial.model.Company;
-import com.springboot.financial.model.ScrapedResult;
-import com.springboot.financial.persist.CompanyRepository;
-import com.springboot.financial.persist.DividendRepository;
-import com.springboot.financial.persist.entity.CompanyEntity;
-import com.springboot.financial.persist.entity.DividendEntity;
+import com.springboot.financial.repository.CompanyRepository;
+import com.springboot.financial.repository.DividendRepository;
 import com.springboot.financial.scraper.Scraper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,7 +72,7 @@ public class CompanyService {
     }
 
     public List<String> autoComplete(String keyword) {
-        return this.trie.prefixMap(keyword).keySet().stream().toList();
+        return this.trie.prefixMap(keyword).keySet().stream().limit(10).toList();
     }
 
     public void deleteAutoCompleteKeyword(String keyword) {

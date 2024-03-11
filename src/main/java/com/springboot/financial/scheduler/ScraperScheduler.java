@@ -1,12 +1,12 @@
 package com.springboot.financial.scheduler;
 
-import com.springboot.financial.model.Company;
-import com.springboot.financial.model.ScrapedResult;
-import com.springboot.financial.model.constants.CacheKey;
-import com.springboot.financial.persist.CompanyRepository;
-import com.springboot.financial.persist.DividendRepository;
-import com.springboot.financial.persist.entity.CompanyEntity;
-import com.springboot.financial.persist.entity.DividendEntity;
+import com.springboot.financial.constants.CacheKey;
+import com.springboot.financial.dto.Company;
+import com.springboot.financial.dto.ScrapedResult;
+import com.springboot.financial.entity.CompanyEntity;
+import com.springboot.financial.entity.DividendEntity;
+import com.springboot.financial.repository.CompanyRepository;
+import com.springboot.financial.repository.DividendRepository;
 import com.springboot.financial.scraper.Scraper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

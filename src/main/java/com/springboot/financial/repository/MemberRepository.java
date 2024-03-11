@@ -1,6 +1,6 @@
-package com.springboot.financial.persist;
+package com.springboot.financial.repository;
 
-import com.springboot.financial.model.MemberEntity;
+import com.springboot.financial.entity.MemberEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

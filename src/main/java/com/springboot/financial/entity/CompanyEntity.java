@@ -1,6 +1,6 @@
-package com.springboot.financial.persist.entity;
+package com.springboot.financial.entity;
 
-import com.springboot.financial.model.Company;
+import com.springboot.financial.dto.Company;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
