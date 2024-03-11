@@ -1,4 +1,4 @@
-package com.springboot.financial.model;
+package com.springboot.financial.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

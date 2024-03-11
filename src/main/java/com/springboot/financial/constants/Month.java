@@ -1,4 +1,4 @@
-package com.springboot.financial.model.constants;
+package com.springboot.financial.constants;
 
 public enum Month {
 
@@ -15,8 +15,8 @@ public enum Month {
     NOV("Nov", 11),
     DEC("Dec", 12);
 
-    private String s;
-    private int number;
+    private final String s;
+    private final int number;
 
     Month(String s, int n) {
         this.s = s;
